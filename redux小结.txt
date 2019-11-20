@@ -1,0 +1,170 @@
+redux是一个类似于vuex的状态管理工具；它可以解决组件之间的数据共享和兄弟传值问题。
+
+1、安装：npm i redux
+
+2、导入：import {createStore} from redux；应该是单独新建一个store.js文件，在该文件中导入redux
+
+3、在store.js文件中使用createStore,如下：
+
+//store.js文件
+
+import {createStore} from redux
+
+const store = createStore(reducer)
+
+export default store;
+
+4、根据第3步中的reducer，我们需要编写reducer文件，reducer是一个函数，该函数具备两个参数：state,action;它的作用是根据action动作的不同产生全新的state，我们以计数器为例介绍，计数器reducer代码如下：
+
+const COUNT_ADD = 'countadd'
+const COUNT_SUB = 'countsub'
+
+const defaultState = {
+	count : 0
+}
+
+const countReducer = (state=defaultState,action)=>{
+	switch(action.type){
+		case COUNT_ADD:
+			return {...state,count:state.count+1}
+		case COUNT_SUB:
+			return {...state,count:state.count+1}
+		default:
+			return state
+	}
+}
+
+该reducer可以拆分，同时也可以使用redux-acions来简化；使用redux-actions简化后的效果：
+
+import {handleActions} from 'redux-actions';
+
+const COUNT_ADD = 'countadd'
+const COUNT_SUB = 'countsub'
+
+const defaultState = {
+	count : 0
+}
+const countReducer = handleActions({
+	[COUNT_ADD] : (state,action)=>{return {...state,count:state.count+1}},
+	[COUNT_SUB] : (state,action)=>{return {...state,count:state.count-1}}
+},defaultState)
+
+export default countReducer
+
+使用combineReducers拆分reducer后的效果：
+
+import { combineReducers } from "redux";
+import { handleActions } from "redux-actions";
+
+const COUNT_ADD = 'countadd'
+const COUNT_SUB = 'countsub'
+const ADD_AGE = 'addage'
+const SUB_AGE = 'subage'
+
+const defaultState = {
+	count : 0,
+	age : 18
+}
+
+let count = handleActions(
+  {
+    [COUNT_ADD]: (state, action) => state + 1,
+    [COUNT_SUB]: (state, action) => state - 1
+  },
+  defaultState.count
+);
+let age = handleActions(
+  {
+    [ADD_AGE]: (state, action) => state + 1,
+    [SUB_AGE]: (state, action) => state - 1
+  },
+  defaultState.age
+);
+const reducer = combineReducers({
+  count,
+  age,
+});
+
+export default reducer;
+
+5、编写action，redux中的action尽量复合FSA（flux stander action）规范，该规范概要如下：
+
+1）一个action必须是一个普通的JavaScript对象，有一个type字段。
+2）一个action可能有error字段、payload字段、meta字段。
+3）一个action必须不能包含除type、payload、error及meta以外的其他字段。
+
+type是必须的，一般为一个已定义的常量值，payload中一般用来承载异步请求来的数据或初始数据，payload是一个对象，里面存什么键值对，自己定义。
+
+action定义的示例如下：
+
+const addCountAction = {type : COUNT_ADD}
+const addCountAciton = function(counter){
+	return {
+		type : COUNT_ADD,
+		payload : {
+			count : counter
+		}
+	}
+}
+
+也可以使用redux-actions简化action的定义，如下：
+
+import {createAction} from 'redux-actions';
+const addCountAction = createAction(COUNT_ADD)
+
+等价于：
+
+const addCountAction = {type : COUNT_ADD}
+
+const addCountAction = createAction(COUNT_ADD,(counter)=>{
+	return {count:counter}
+})
+
+等价于
+
+const addCountAciton = function(counter){
+	return {
+		type : COUNT_ADD,
+		payload : {
+			count : counter
+		}
+	}
+}
+
+也就说使用createAction创建出的action是一个方法，使用的时候需要addCountAciton()调用。
+
+6、异步action，异步action需要action是一个方法而不是JavaScript对象；要做到这一点可以安装一个redux的中间件:redux-thunk
+
+该中间件的作用就是支持store.dispatch(action)内部的action为方法，而不仅仅是对象
+
+用法：
+
+//store.js
+
+import { createStore, applyMiddleware } from "redux";
+import thunk from "redux-thunk";
+let store = createStore(reducer, applyMiddleware(thunk));
+
+
+异步action最终提交的也是对象action，因为只有对象action才可以触发reducer，也就说异步action仅仅是为了完成异步操作对对象action的一个包装，如下：
+
+//setWeather是一个对象action
+export const setWeather = createAction(Types.WEATHER, weather => {
+  return { weather };
+});
+
+//getWeather就是一个异步action
+export const getWeather = dispatch => {
+  axios
+    .get("/ajaxWeather.php")
+    .then(res => {
+      dispatch(setWeather(res.data.weather));
+    })
+    .catch(err => {
+      console.error(err);
+      dispatch(setWeather(""));
+    });
+};
+
+
+小结：redux是一个设计用来完成数据共享的工具，如果需要共享数据或兄弟传值才用它，否则不用。如果共享的数据需要异步请求的时候才用thunk中间件，如果没有异步请求需求也不用thunk中间件。
