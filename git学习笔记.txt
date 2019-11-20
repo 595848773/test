@@ -1,0 +1,59 @@
+git init：初始化一个空仓库(打git init命令的时候需要把目录切到需要初始化空仓库的目录下)
+
+git add 文件名 : 代码编辑区向暂存区提交一个文件
+
+git add 文件1 文件2 :代码编辑区向暂存区提交两个文件
+
+git add . :提交所有修改的和新建的数据暂存区
+
+git add -u :提交所有被删除和修改的文件到数据暂存区
+
+git add -A :提交所有被删除、被替换、被修改和新增的文件到数据暂存区
+
+git commit -m '注释'
+
+git status ：查看工作树的状态，这个状态包括工作区和缓存区的变化都会记录，比如新增，修改，删除，add提交都会记录。
+
+git diff 文件名 :用来对比文件版本的区别，旧版本和新版本的区别，如果当前版本没有修改变更则无变化输出
+
+
+git reset --hard HEAD^	:回退一个版本
+
+git reset --hard HEAD^^ :回退两个版本
+
+git reset --hard HEAD~3 :回退三个版本
+
+git reset --hard 版本号前6位 :去往版本号指定的版本
+
+git log :  显示比当前版本旧的版本信息（包含当前版本），作者，日期，注释，版本号
+
+git reflog : 显示提交的所有版本
+
+在每次修改工作区后都需要add提交暂存区，修改或新增只会由暂存区提交仓库，不会从工作区直接提交到仓库
+
+git checkout -- 要撤销的文件名	:  把工作区的修改撤销掉（注意不是暂存区，更不是仓库）
+
+git reset HEAD 要撤销的文件名 : 把暂存区的修改撤销掉（注意不是仓库，也不是工作区）
+
+git rm 文件名 ： 从git
+
+
+远程仓库：
+
+1、需要在本地生成SSH 公钥秘钥:ssh-keygen -t rsa -C "youremail@example.com"
+
+2、把公钥内容上传到Git hub上（账号管理->setting->SSH and GPG keys）
+
+本地、远程仓库交互方式：
+
+1、在github官网上新建一个仓库
+
+2、克隆当前仓库到本地 : git clone 远程仓库地址
+
+3、修改本地代码，提交本地；
+
+4、git push origin master:master
+
+5、修改远程仓库的readMe.md文件内容
+
+6、本地执行 git pull origin master:master
